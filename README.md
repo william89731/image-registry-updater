@@ -15,7 +15,9 @@ I created this script to find out if our images are actually updated
 
 ### usage
 
+launch:
+
 ```bash
-curl -sSfL https:
+curl -sSfL https://raw.githubusercontent.com/william89731/image-registry-updater/main/check.sh | bash
 ```
 
