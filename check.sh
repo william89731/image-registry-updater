@@ -47,13 +47,6 @@ for IMAGE in $images; do
   fi
 done
 
-echo -n "do you want to clean no used images? [y/n]: ";
-read;
-if [[ $REPLY =~ ^(y) ]]; then
-info "clean.."
-docker image prune -a --force > /dev/null 2>&1
-fi  
-
 info "[images necessary update]"
 cat /tmp/images.txt
 rm /tmp/images.txt
