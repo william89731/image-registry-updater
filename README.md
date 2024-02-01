@@ -11,7 +11,9 @@
 
 sometimes we use tools to get image update notifications, but then, do we update the images? 
 
-I created this script to find out if our images are actually updated
+I created this script to find out if our images are actually updated. 
+
+```works in kubernetes and docker```
 
 ### usage
 
@@ -20,4 +22,10 @@ launch:
 ```bash
 curl -sSfL https://raw.githubusercontent.com/william89731/image-registry-updater/main/check.sh | bash
 ```
+
+if you're lucky:
+
+![image](https://github.com/william89731/image-registry-updater/assets/68069659/d4c3580f-b62d-40ee-9629-3467e47a058e)
+
+
 
