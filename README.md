@@ -1,4 +1,4 @@
-![43bf277e2f8620f3ffa874fbaec55a3c](https://github.com/william89731/image-registry-updater/assets/68069659/c6f45846-94eb-4df1-b43a-510088b24111)
+![update](https://github.com/william89731/image-registry-updater/assets/68069659/b4cb88fc-4eb0-410d-bc87-cb81f681d46e)
 
 [![os](https://img.shields.io/badge/os-linux-red)](https://www.linux.org/)
 [![script](https://img.shields.io/badge/script-bash-orange)](https://www.gnu.org/software/bash/)
