@@ -1,51 +1,51 @@
 #!/bin/bash
 
+info()  { 
+  echo -e "\e[32m $*\e[39m"; 
+  }
+warn()  { 
+  echo -e "\e[33m $*\e[39m"; 
+  }
+error() { 
+  echo -e "\e[31m $*\e[39m"; 
+  }
+  
 clear
-function info  { echo -e "\e[32m $*\e[39m"; }
-function warn  { echo -e "\e[33m $*\e[39m"; }
-function error { echo -e "\e[31m $*\e[39m"; }
 
+check() {
+  command kubectl get no > /dev/null 2>&1 || KUBECTL=("not found")
 
-command kubectl get no > /dev/null 2>&1 || KUBECTL=("not found")
-
-if [[  $KUBECTL != "not found" ]]; then
-  images=$(kubectl get po -A -o jsonpath="{.items[*].spec.containers[*].image}" | tr -s '[[:space:]]' '\n' | sort | uniq -c | awk '{print  $2}')
-else 
-  images=$(docker images --format "{{.Repository}}:{{.Tag}}")
-fi
-
-info  "\U1F440 checks images.."
-for IMAGE in $images; do
-  docker pull $IMAGE > /dev/null 2>&1
-  exit_code=$?
-  if [ $exit_code = 1 ]; then
-    error "$IMAGE pull error" 
+  if [[  $KUBECTL != "not found" ]]; then
+    images=$(kubectl get po -A -o jsonpath="{.items[*].spec.containers[*].image}" | tr -s '[[:space:]]' '\n' | sort | uniq -c | awk '{print  $2}' | awk '{gsub("quay.io/", "");print}')
+  else 
+    images=$(docker images --format "{{.Repository}}:{{.Tag}}")
   fi
-  REPO=$(printf '%s' "$IMAGE" | cut -f1 -d":")
-  VERSION=$(printf '%s' "$IMAGE" | cut -f2 -d":")
+
+  info  "\U1F440 checks images.."
+
+  echo ""
   
+  for IMAGE in $images; do
+    REPO=$(printf '%s' "$IMAGE" | cut -f1 -d":")
+    VERSION=$(printf '%s' "$IMAGE" | cut -f2 -d":")
+    LATEST=$(
+        API=https://registry.hub.docker.com/v2/repositories/library/${REPO}/tags
+        if [[  stderror ]]; then
+        API=https://registry.hub.docker.com/v2/repositories/${REPO}/tags?page_size=20
+        fi
+        curl --silent \
+        "$API" \
+        | jq -r ".results[].name" | sort --version-sort -r \
+        | sed '/^master/d' | sed '/^latest/d' | sed '/^sha/d' | sed '/^tilt/d' | sed '/[a-zA-Z]$/d' | sed '/[a-zA-Z647]$/d'| sed '/rc[0-9]$/d' | sed '/rc.[0-9]$/d' \
+        | head -n 1   
+    )
 
-  docker pull $REPO > /dev/null 2>&1
+    if [[ $LATEST != $VERSION ]]; then
+        warn "$REPO"  #>> /tmp/images.txt
+        echo "update available: [$LATEST]"
+        echo ""  
+    fi
+  done
+}
 
-  exit_code=$?
-  if [ $exit_code = 1 ]; then
-      error "\U26D4 $REPO" 
-  fi
-
-  INSTALLED=$(docker image inspect $IMAGE | jq -r '.[].RepoDigests[]' | awk -F@ '{print $2}')
-  LATEST=$(docker image inspect $REPO | jq -r '.[].RepoDigests[]' | awk -F@ '{print $2}')
-  if [[ $INSTALLED != $LATEST ]]  && [[ ! -z $LATEST ]] ; then
-      echo "$IMAGE" >> /tmp/images.txt 
-  fi
-  
-done
-
-docker image prune -a --force > /dev/null 2>&1
-
-if [[ ! -f /tmp/images.txt ]]; then
-  info "\U2705 images updates"
-else
-  warn "\U2757 images found:"
-  cat /tmp/images.txt
-  rm /tmp/images.txt
-fi
+check
