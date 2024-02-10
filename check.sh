@@ -34,20 +34,44 @@ else
   images=$(docker images --format "{{.Repository}}:{{.Tag}}")
 fi
 
-#Images=longhornio/longhorn-ui:v1.6.0
+Images=mariadb:11.2.1
 for IMAGE in $images; do
   REPO=$(printf '%s' "$IMAGE" | cut -f1 -d":")
   VERSION=$(printf '%s' "$IMAGE" | cut -f2 -d":")
   LIBRARY=$(printf '%s' "$REPO" | grep /)
+  APIREPO="https://registry.hub.docker.com/v2/repositories/${REPO}/tags?page_size=40"
+  APILIBRARY="https://registry.hub.docker.com/v2/repositories/library/${REPO}/tags?page_size=40"
   LATEST=$(
-      API="https://registry.hub.docker.com/v2/repositories/${REPO}/tags?page_size=40" 
-      if [[ -z $LIBRARY ]]; then
-      API="https://registry.hub.docker.com/v2/repositories/library/${REPO}/tags?page_size=40"
-      fi
-      curl --silent $API \
+      if [[ $REPO == "koenkk/zigbee2mqtt" ]]; then
+      curl --silent $APIREPO \
       | jq -r ".results[].name" | sort --version-sort -r \
-      | sed '/^master/d' | sed '/^latest/d' | sed '/^sha/d' | sed '/^tilt/d' | sed '/[a-zA-Z]$/d' | sed '/[a-zA-Z647]$/d'| sed '/rc[0-9]$/d' | sed '/rc.[0-9]$/d' | sed '/pre.[0-9]$/d' | sed '/dev-2024[0-9][0-9][0-9][0-9]$/d' \
+      | sed '/^[master|sha|latest|tilt]/d' \
+      | sed '/v[0-9].[0-9][0-9].[0-9]$/d' \
       | head -n 1
+      elif [[ -z $LIBRARY ]]; then
+      curl --silent $APILIBRARY \
+      | jq -r ".results[].name" | sort --version-sort -r \
+      | sed '/^[master|sha|latest|tilt]/d' \
+      | sed '/[a-zA-Z647]$/d' \
+      | sed '/rc[0-9]$/d' \
+      | sed '/rc.[0-9]$/d' \
+      | sed '/pre.[0-9]$/d' \
+      | sed '/dev-2024[0-9][0-9][0-9][0-9]$/d' \
+      | head -n 1
+      elif [[ ! -z $LIBRARY ]]; then
+      curl --silent $APIREPO \
+      | jq -r ".results[].name" | sort --version-sort -r \
+      | sed '/^[master|sha|latest|tilt]/d' \
+      | sed '/[a-zA-Z647]$/d' \
+      | sed '/rc[0-9]$/d' \
+      | sed '/rc.[0-9]$/d' \
+      | sed '/pre.[0-9]$/d' \
+      | sed '/dev-2024[0-9][0-9][0-9][0-9]$/d' \
+      | head -n 1
+      else
+      error "error"
+      exit 1
+      fi    
   )    
 
   if [[ $LATEST != $VERSION ]]; then
