@@ -25,7 +25,14 @@ curl -sSfL https://raw.githubusercontent.com/william89731/image-registry-updater
 
 if you're lucky:
 
-![image](https://github.com/william89731/image-registry-updater/assets/68069659/d4c3580f-b62d-40ee-9629-3467e47a058e)
+![image](https://github.com/william89731/image-registry-updater/assets/68069659/be716627-b781-4dc7-b735-006e9a17be21)
+
+```note```
+
+use semver tag in yours images. example:
+
+v1.0.0 or 1.0.0
+
 
 
 
