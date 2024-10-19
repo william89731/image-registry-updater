@@ -9,6 +9,8 @@
 
 # Image registry updater
 
+DEPRECATED in flavour to [docker tool](https://github.com/william89731/docker-tool)
+
 sometimes we use tools to get image update notifications, but then, do we update the images? 
 
 I created this script to find out if our images are actually updated. 
